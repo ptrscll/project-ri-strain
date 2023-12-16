@@ -33,10 +33,12 @@ import vtk_plot as vp
 # hot_fast_full_qui 080122_rip_h
 
 # Make list of models with appropriate names
-models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
-          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b',
-          '080122_rip_a','080122_rip_e','080122_rip_b','080122_rip_f',
-          '080122_rip_c','080122_rip_g','080122_rip_d','080122_rip_h']
+#models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
+#          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b',
+#          '080122_rip_a','080122_rip_e','080122_rip_b','080122_rip_f',
+#          '080122_rip_c','080122_rip_g','080122_rip_d','080122_rip_h']
+
+models = ['063022_rip_c']
 
 names = ['Model ' + str(x) for x in range(1,17)]
 
@@ -58,7 +60,7 @@ final = pd.DataFrame([],columns=['Localization','Symmetry','C-ness'])
 
 for k,model in enumerate(tqdm(models[0:])):
     # Get the appropriate pvtu file
-    base_dir = r'/mnt/f44f06b4-89ef-4d7c-a41d-6dbf331c8d4e/riftinversion_production/'
+    base_dir = r'/cluster/tufts/vaseylab/shared/model_results_strain/'
     suffix = r'/output_ri_rift/solution'
     pvtu_dir = base_dir + model + suffix
     

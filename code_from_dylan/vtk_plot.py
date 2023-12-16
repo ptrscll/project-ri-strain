@@ -14,7 +14,7 @@ from joblib import Parallel,delayed,dump,load
 from scipy.spatial import KDTree
 from matplotlib import cm,colors
 
-from tchron import tchron as tc
+#from tchron import tchron as tc
 
 def plot2D(file,field,bounds,ax=None,contours=False,colorbar=False,
          cfields=['crust_upper','crust_lower','mantle_lithosphere'],
@@ -176,6 +176,8 @@ def comp_field_vtk(mesh,fields=['crust_upper','crust_lower','mantle_lithosphere'
     mesh.point_data['comp_field'] = output
     return(mesh)
 
+
+'''
 def He_age_vtk_parallel(files,system,time_interval,file_prefix='meshes_He',
                path='./',temp='~/dump',
                U=100,Th=100,radius=50,batch_size=100,processes=os.cpu_count()-2,
@@ -393,7 +395,7 @@ def particle_He_profile(particle,inputs,calc_age,interpolate_profile):
         age = np.nan
         output = (age,x)
         return(output)
-    
+'''    
     
 
 def particle_trace(meshes,timesteps,point,y_field,x_field='time',
