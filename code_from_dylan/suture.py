@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pyvista_io
-from gdmate.analysis_modules import particles
+import particles
 import pyvista_vis
 
 
