@@ -8,9 +8,9 @@ Created on Fri Aug  5 10:54:25 2022
 import numpy as np
 import matplotlib.pyplot as plt
 
-from gdmate.io import pyvista_io
+import pyvista_io
 from gdmate.analysis_modules import particles
-from gdmate.visualization import pyvista_vis
+import pyvista_vis
 
 
 models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
