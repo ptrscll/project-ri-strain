@@ -19,13 +19,17 @@ import vtk_plot as vp
 # hot_fast_full_qui 072022_rip_b
 
 # Make list of models with appropriate names
-models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
-          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
+#models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
+#          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
 
-names = ['Slow/Cold Half-Breakup','Slow/Cold Half-Breakup w/ Cooling',
-         'Slow/Cold Full-Breakup','Slow/Cold Full-Breakup w/ Cooling',
-         'Hot/Fast Half-Breakup','Hot/Fast  Half-Breakup w/ Cooling',
-         'Hot/Fast  Full-Breakup','Hot/Fast Full-Breakup w/ Cooling']
+models = ['063022_rip_c']
+
+#names = ['Slow/Cold Half-Breakup','Slow/Cold Half-Breakup w/ Cooling',
+#         'Slow/Cold Full-Breakup','Slow/Cold Full-Breakup w/ Cooling',
+#         'Hot/Fast Half-Breakup','Hot/Fast  Half-Breakup w/ Cooling',
+#         'Hot/Fast  Full-Breakup','Hot/Fast Full-Breakup w/ Cooling']
+
+names = ['Slow/Cold Half-Breakup']
 
 # Indicate time of final rift of reach model (post-cooling)
 
@@ -45,17 +49,19 @@ opacity_strain = [0,0.7,0.7,0.7,0.7]
 lim_strain = [0,5]
 cm_strain = 'inferno'
 
+pv.start_xvfb()
+
 # Do the loop to plot
 
 for k,model in enumerate(models):
     
     # Get the appropriate pvtu file
-    base_dir = r'/mnt/f44f06b4-89ef-4d7c-a41d-6dbf331c8d4e/riftinversion_production/'
+    base_dir = r'/cluster/tufts/vaseylab/shared/model_results_strain/'
     suffix = r'/output_ri_rift/solution'
     pvtu_dir = base_dir + models[k] + suffix
     
     # Get meshes with rift-side information
-    side_dir = r'~/git/gdmate/processing/figs/'
+    side_dir = r'/cluster/tufts/vaseylab/pscull01/project-ri-strain/project-ri-strain/code_from_dylan/figs/'
     side_dir_rift = side_dir + models[k] + '/' +models[k] + '_0.vtu'
     side_dir_invert = side_dir + models[k] + '/' +models[k] + '_10.vtu'
     
