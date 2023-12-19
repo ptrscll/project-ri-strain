@@ -162,6 +162,7 @@ for k,model in enumerate(tqdm(models[0:])):
     print('Symmetry: ',symmetry_corrected)
     
     fig,axs = plt.subplots(4,figsize=(8.5,11),dpi=300)
+    pv.start_xvfb()
     vp.plot2D(file,field,bounds,ax=axs[0])
     axs[0].set_title('Model '+str(k+1))
     axs[1].plot(x_values,y_values)

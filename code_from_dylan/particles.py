@@ -5,7 +5,7 @@ import os
 import numpy as np
 from scipy.spatial import KDTree
 from joblib import Parallel,delayed
-from numba import jit
+#from numba import jit
 from tqdm import tqdm
 
 def nearest_neighbor_KDTree(position,positions):
@@ -19,7 +19,7 @@ def nearest_neighbor_KDTree(position,positions):
 
     return(index)
 
-@jit
+#@jit
 def nearest_neighbor_numpy(position,positions):
     """
     Find nearest neighbor of a particle using X,Y,Z positions.
