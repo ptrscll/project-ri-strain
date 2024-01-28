@@ -29,7 +29,7 @@ names = ['Slow/Cold Half-Breakup']
 times = [16,36,32,52,7.3,27.3,14.5,34.5]
 tstep_interval = 0.1
 
-base_dir = r'/cluster/tufts/vaseylab/shared/model_results_strain/'
+base_dir = r'/mnt/d459dc32-537b-41a9-9d32-483256cce117/riftinversion_production/'
 suffix = r'/output_ri_rift/particles'
 
 bounds = [300e3,700e3,500e3,620e3,0,0]

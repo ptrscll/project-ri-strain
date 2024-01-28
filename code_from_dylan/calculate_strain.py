@@ -34,13 +34,16 @@ import vtk_plot as vp
 
 # Make list of models with appropriate names
 #models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
-#          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b',
+#          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
+# Fast models (for reference when analyzing them later):
 #          '080122_rip_a','080122_rip_e','080122_rip_b','080122_rip_f',
 #          '080122_rip_c','080122_rip_g','080122_rip_d','080122_rip_h']
 
 models = ['063022_rip_c']
 
 names = ['Model ' + str(x) for x in range(1,17)]
+
+output_dir = r'results/'
 
 # Indicate time of final rift of reach model (post-cooling)
 
@@ -60,7 +63,7 @@ final = pd.DataFrame([],columns=['Localization','Symmetry','C-ness'])
 
 for k,model in enumerate(tqdm(models[0:])):
     # Get the appropriate pvtu file
-    base_dir = r'/cluster/tufts/vaseylab/shared/model_results_strain/'
+    base_dir = r'/mnt/d459dc32-537b-41a9-9d32-483256cce117/riftinversion_production/'
     suffix = r'/output_ri_rift/solution'
     pvtu_dir = base_dir + model + suffix
     
@@ -162,7 +165,7 @@ for k,model in enumerate(tqdm(models[0:])):
     print('Symmetry: ',symmetry_corrected)
     
     fig,axs = plt.subplots(4,figsize=(8.5,11),dpi=300)
-    pv.start_xvfb()
+    #pv.start_xvfb()
     vp.plot2D(file,field,bounds,ax=axs[0])
     axs[0].set_title('Model '+str(k+1))
     axs[1].plot(x_values,y_values)
@@ -178,7 +181,7 @@ for k,model in enumerate(tqdm(models[0:])):
     
     plt.tight_layout()
     
-    fig.savefig(str(k+1)+'_strainresults.pdf')
+    fig.savefig(output_dir + str(k+1)+'_strainresults.pdf')
  
 plt.rcParams['axes.prop_cycle'] = plt.cycler(color=plt.cm.tab20.colors)  
  
@@ -192,7 +195,7 @@ ax.legend(bbox_to_anchor=(-0.2, 1))
 ax.set_xlabel('Localization')
 ax.set_ylabel('Symmetry')
 
-fig.savefig('localsym.pdf')
+fig.savefig(output_dir + 'localsym.pdf')
 
 fig,ax = plt.subplots(1,subplot_kw={'projection': 'ternary'})
 
@@ -214,5 +217,5 @@ for k,row in final.iterrows():
     ax.scatter(cness_norm[k],aness_norm[k],bness_norm[k],label=k)
 ax.legend(bbox_to_anchor=(0, 1))
 
-fig.savefig('ternary.pdf')
+fig.savefig(output_dir + 'ternary.pdf')
 

@@ -31,6 +31,8 @@ models = ['063022_rip_c']
 
 names = ['Slow/Cold Half-Breakup']
 
+output_dir = r'results/'
+
 # Indicate time of final rift of reach model (post-cooling)
 
 times = [16,36,32,52,7.3,27.3,14.5,34.5]
@@ -49,19 +51,19 @@ opacity_strain = [0,0.7,0.7,0.7,0.7]
 lim_strain = [0,5]
 cm_strain = 'inferno'
 
-pv.start_xvfb()
+#pv.start_xvfb()
 
 # Do the loop to plot
 
 for k,model in enumerate(models):
     
     # Get the appropriate pvtu file
-    base_dir = r'/cluster/tufts/vaseylab/shared/model_results_strain/'
+    base_dir = r'/mnt/d459dc32-537b-41a9-9d32-483256cce117/riftinversion_production/'
     suffix = r'/output_ri_rift/solution'
     pvtu_dir = base_dir + models[k] + suffix
     
     # Get meshes with rift-side information
-    side_dir = r'/cluster/tufts/vaseylab/pscull01/project-ri-strain/project-ri-strain/code_from_dylan/figs/'
+    side_dir = r'figs/'
     side_dir_rift = side_dir + models[k] + '/' +models[k] + '_0.vtu'
     side_dir_invert = side_dir + models[k] + '/' +models[k] + '_10.vtu'
     
@@ -98,7 +100,7 @@ for k,model in enumerate(models):
 plt.tight_layout()
     
     
-fig.savefig('initial_production_sides.pdf')
+fig.savefig(output_dir + 'initial_production_sides.pdf')
     
 
 
