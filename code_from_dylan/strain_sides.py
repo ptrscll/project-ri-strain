@@ -63,6 +63,8 @@ final = pd.DataFrame([],columns=['Localization','Symmetry','C-ness'])
 
 # TODO: Figure out how to get the correct combo of directories
 for k,model in enumerate(tqdm(models[0:])):
+
+    '''
     # Get the appropriate pvtu file
     base_dir = r'/mnt/d459dc32-537b-41a9-9d32-483256cce117/riftinversion_production/'
     suffix = r'/output_ri_rift/solution'
@@ -79,7 +81,13 @@ for k,model in enumerate(tqdm(models[0:])):
     # Pull the file locations
     file = vp.get_pvtu(pvtu_dir,tstep_invert)
     mesh = pv.read(file)
-    
+    '''
+    side_dir = r'figs/'
+    file = side_dir + model + '/' + model + '_10.vtu'
+    if model == '071322_rip':
+        file = side_dir + model + '/' + model + '_9.vtu'
+    mesh = pv.read(file)
+
     bounds_mesh = [bound*1e3 for bound in bounds] + [0,0]
     clipped = mesh.clip_box(bounds_mesh)
 
@@ -92,25 +100,30 @@ for k,model in enumerate(tqdm(models[0:])):
     sides = clipped['rift_side']
     df = pd.DataFrame([x_rounded,strains,sides]).T
     df.columns = ['X','Strain', 'Side&Layer']
-    
-    # Print df to make sure working
-    print(df.head)
 
-    # NO CODE HAS BEEN EDITED PAST THIS POINT
-    # Sum strains along same x and clip
-    strains_summed = df.groupby('X').sum()
-    strains_summed_clipped = strains_summed[3e5:7e5+1]
-    
-    # Isolate x values (km) and strains
-    x_values = strains_summed_clipped.index/1000
-    y_values = strains_summed_clipped['Strain']
-    
-    # Use filter to smooth strains
-    y_smoothed = savgol_filter(y_values,25,polyorder=3)
-    
-    # Normalized smoothed strain using maximum strain value
-    y_normalized = y_smoothed/np.max(y_smoothed)
-    
+    # This is where major edits begin since last test
+    # Splitting the table into left and right sides of the suture
+    left_df = df[df['Side&Layer'] <= 3]
+    right_df = df[df['Side&Layer'] >= 4]
+
+    for side, df in zip(['left', 'right'], [left_df, right_df]):
+        print(k)
+        print(df.head())
+
+        # Sum strains along same x and clip
+        strains_summed = df.groupby(['X']).sum()
+        strains_summed_clipped = strains_summed[3e5:7e5+1]
+        
+        # Isolate x values (km) and strains
+        x_values = strains_summed_clipped.index/1000
+        y_values = strains_summed_clipped['Strain']
+        
+        # Use filter to smooth strains
+        y_smoothed = savgol_filter(y_values,25,polyorder=3)
+        
+        # Normalized smoothed strain using maximum strain value
+        y_normalized = y_smoothed/np.max(y_smoothed)
+        '''
     peaks = find_peaks(y_normalized,height=0.98,prominence=0.1,rel_height=0.9)
     peak_indices = peaks[0]
     x_peaks = x_values[peak_indices]
@@ -161,34 +174,38 @@ for k,model in enumerate(tqdm(models[0:])):
     
     area_ratio = np.sum(areas)/total_area
     hw_ratio = heights/widths_x
-    print('\nModel ',k+1)
-    print('Area ratio: ',area_ratio)
-    print('Heights: ',heights)
+        '''
+        print('\nModel ',k+1)
+        print('Side: ', side)
+        
+        '''
+        print('Area ratio: ',area_ratio)
+        print('Heights: ',heights)
     print('Widths: ',widths_norm)
     print('Height/width ratios: ',np.array(hw_ratio))
     print('Left Areas: ',left_areas)
     print('Right Areas: ',right_areas)
     print('Symmetry: ',symmetry_corrected)
+        '''
+        fig,axs = plt.subplots(4,figsize=(8.5,11),dpi=300)
+        #pv.start_xvfb()
+        vp.plot2D(file,field,bounds,ax=axs[0])
+        axs[0].set_title('Model '+str(k+1))
+        axs[1].plot(x_values,y_values)
     
-    fig,axs = plt.subplots(4,figsize=(8.5,11),dpi=300)
-    #pv.start_xvfb()
-    vp.plot2D(file,field,bounds,ax=axs[0])
-    axs[0].set_title('Model '+str(k+1))
-    axs[1].plot(x_values,y_values)
+        axs[2].plot(x_values,y_normalized)
+        #axs[2].scatter(x_peaks,heights,c='red')
+        #axs[2].hlines(y=width_heights,xmin=min_x_peaks,xmax=max_x_peaks,color='red')
     
-    axs[2].plot(x_values,y_normalized)
-    axs[2].scatter(x_peaks,heights,c='red')
-    axs[2].hlines(y=width_heights,xmin=min_x_peaks,xmax=max_x_peaks,color='red')
-    
-    axs[3].scatter(x_peaks,symmetry_corrected)
-    axs[3].set_xlim(300,700)
-    axs[3].set_ylim(0,1)
-    axs[3].scatter([400,600],[percentile25,percentile75])
-    
-    plt.tight_layout()
-    
-    fig.savefig(output_dir + str(k+1)+'_strainresults.pdf')
- 
+        #axs[3].scatter(x_peaks,symmetry_corrected)
+        #axs[3].set_xlim(300,700)
+        #axs[3].set_ylim(0,1)
+        #axs[3].scatter([400,600],[percentile25,percentile75])
+         
+        plt.tight_layout()
+        
+        fig.savefig(output_dir + str(k+1)+'_' + side +'_strainresults.pdf')
+'''
 plt.rcParams['axes.prop_cycle'] = plt.cycler(color=plt.cm.tab20.colors)  
  
 fig,ax = plt.subplots(1)
@@ -224,4 +241,4 @@ for k,row in final.iterrows():
 ax.legend(bbox_to_anchor=(0, 1))
 
 fig.savefig(output_dir + 'ternary.pdf')
-
+'''
