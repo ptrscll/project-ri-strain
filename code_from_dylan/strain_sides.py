@@ -43,7 +43,7 @@ models = ['063022_rip_c']
 
 names = ['Model ' + str(x) for x in range(1,17)]
 
-output_dir = r'results/'
+output_dir = r'results/strain_sides/'
 
 # Indicate time of final rift of reach model (post-cooling)
 
@@ -101,10 +101,16 @@ for k,model in enumerate(tqdm(models[0:])):
     df = pd.DataFrame([x_rounded,strains,sides]).T
     df.columns = ['X','Strain', 'Side&Layer']
 
-    # This is where major edits begin since last test
+    
     # Splitting the table into left and right sides of the suture
     left_df = df[df['Side&Layer'] <= 3]
     right_df = df[df['Side&Layer'] >= 4]
+
+    # Setting up plot
+    fig,axs = plt.subplots(3,figsize=(8.5,11),dpi=300)
+    #pv.start_xvfb()
+    vp.plot2D(file,field,bounds,ax=axs[0])
+    axs[0].set_title('Model '+str(k+1))
 
     for side, df in zip(['left', 'right'], [left_df, right_df]):
         print(k)
@@ -187,12 +193,7 @@ for k,model in enumerate(tqdm(models[0:])):
     print('Right Areas: ',right_areas)
     print('Symmetry: ',symmetry_corrected)
         '''
-        fig,axs = plt.subplots(4,figsize=(8.5,11),dpi=300)
-        #pv.start_xvfb()
-        vp.plot2D(file,field,bounds,ax=axs[0])
-        axs[0].set_title('Model '+str(k+1))
         axs[1].plot(x_values,y_values)
-    
         axs[2].plot(x_values,y_normalized)
         #axs[2].scatter(x_peaks,heights,c='red')
         #axs[2].hlines(y=width_heights,xmin=min_x_peaks,xmax=max_x_peaks,color='red')
@@ -202,9 +203,9 @@ for k,model in enumerate(tqdm(models[0:])):
         #axs[3].set_ylim(0,1)
         #axs[3].scatter([400,600],[percentile25,percentile75])
          
-        plt.tight_layout()
+    plt.tight_layout()
         
-        fig.savefig(output_dir + str(k+1)+'_' + side +'_strainresults.pdf')
+    fig.savefig(output_dir + str(k+1)+'_strain_sides_results.pdf')
 '''
 plt.rcParams['axes.prop_cycle'] = plt.cycler(color=plt.cm.tab20.colors)  
  

@@ -14,15 +14,15 @@ import pyvista_vis
 import pyvista as pv
 
 
-#models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
-#          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
-models = ['063022_rip_c']
+models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
+          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
+#models = ['063022_rip_c']
 
-#names = ['Slow/Cold Half-Breakup','Slow/Cold Half-Breakup w/ Cooling',
-#         'Slow/Cold Full-Breakup','Slow/Cold Full-Breakup w/ Cooling',
-#         'Hot/Fast Half-Breakup','Hot/Fast  Half-Breakup w/ Cooling',
-#         'Hot/Fast  Full-Breakup','Hot/Fast Full-Breakup w/ Cooling']
-names = ['Slow/Cold Half-Breakup']
+names = ['Slow/Cold Half-Breakup','Slow/Cold Half-Breakup w/ Cooling',
+         'Slow/Cold Full-Breakup','Slow/Cold Full-Breakup w/ Cooling',
+         'Hot/Fast Half-Breakup','Hot/Fast  Half-Breakup w/ Cooling',
+         'Hot/Fast  Full-Breakup','Hot/Fast Full-Breakup w/ Cooling']
+#names = ['Slow/Cold Half-Breakup']
 
 # Indicate time of final rift of reach model (post-cooling)
 
@@ -90,7 +90,7 @@ for k,model in enumerate(models):
     
     fig,axs = plt.subplots(int(len(meshes)),dpi=300,figsize=(8.5,2*len(meshes)))
 
-    pv.start_xvfb()
+    #pv.start_xvfb()
     for n,ax in enumerate(axs):
         pyvista_vis.pv_plot_2d(meshes[n],'rift_side',bounds=bounds[0:4],ax=ax)
     
