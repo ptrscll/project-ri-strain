@@ -68,7 +68,7 @@ def run_scalar_forward(source_mesh,future_meshes,field,interpolate=True,
             tree = KDTree(old_positions)
             
             # Loop through new particles
-            new_scalars = Parallel(n_jobs=processes,require='sharedmem')(
+            new_scalars = Parallel(n_jobs=processes,require='sharedmem',batch_size=2000)(
                 delayed(get_previous_scalar_KDTree)(particle,new_positions[k],old_particles,old_scalars,
                     tree, interpolate=interpolate) 
                     for k,particle in enumerate(new_particles)
