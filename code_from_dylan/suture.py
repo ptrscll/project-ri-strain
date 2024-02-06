@@ -14,11 +14,11 @@ import pyvista_vis
 import pyvista as pv
 
 
-models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
+models = ['071822_rip_b','070422_rip_e','072022_rip_a',
           '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
 #models = ['063022_rip_c']
 
-names = ['Slow/Cold Half-Breakup','Slow/Cold Half-Breakup w/ Cooling',
+names = ['Slow/Cold Half-Breakup w/ Cooling',
          'Slow/Cold Full-Breakup','Slow/Cold Full-Breakup w/ Cooling',
          'Hot/Fast Half-Breakup','Hot/Fast  Half-Breakup w/ Cooling',
          'Hot/Fast  Full-Breakup','Hot/Fast Full-Breakup w/ Cooling']
@@ -47,7 +47,7 @@ for k,model in enumerate(models):
     tsteps = np.arange(start,end+1,20)
     
     meshes = pyvista_io.pv_load_clipped_meshes(directory,tsteps,bounds=bounds,
-        kind='particles',processes=4)
+        kind='particles',processes=2)
     
     fields = ['initial crust_upper','initial crust_lower','initial mantle_lithosphere']
 
@@ -86,11 +86,11 @@ for k,model in enumerate(models):
     base_mesh['rift_side'] = values
     
     new_meshes = particles.run_scalar_forward(meshes[0],meshes[1:],field='rift_side',
-    processes=8,interpolate=True,method='KDTree')
+    processes=36,interpolate=True,method='KDTree')
     
     fig,axs = plt.subplots(int(len(meshes)),dpi=300,figsize=(8.5,2*len(meshes)))
 
-    #pv.start_xvfb()
+    pv.start_xvfb()
     for n,ax in enumerate(axs):
         pyvista_vis.pv_plot_2d(meshes[n],'rift_side',bounds=bounds[0:4],ax=ax)
     
