@@ -33,13 +33,13 @@ import vtk_plot as vp
 # hot_fast_full_qui 080122_rip_h
 
 # Make list of models with appropriate names
-#models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
-#          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
+models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
+          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
 # Fast models (for reference when analyzing them later):
 #          '080122_rip_a','080122_rip_e','080122_rip_b','080122_rip_f',
 #          '080122_rip_c','080122_rip_g','080122_rip_d','080122_rip_h']
 
-models = ['063022_rip_c']
+#models = ['063022_rip_c', '071822_rip_b','070422_rip_e']
 
 names = ['Model ' + str(x) for x in range(1,17)]
 
@@ -55,8 +55,11 @@ invert_times = [20]*8 + [4]*8
 
 bounds = [300,700,400,620]
 
-# Plot to see strain distribution
+# Variables for seeing strain distribution
 field = 'noninitial_plastic_strain'
+opacity_strain = [0, 0.7, 0.7, 0.7, 0.7]
+lim_strain = [0, 5]
+cm_strain = 'inferno'
 
 # Create dataframe for final values
 final = pd.DataFrame([],columns=['Localization','Symmetry','C-ness'])
@@ -109,7 +112,11 @@ for k,model in enumerate(tqdm(models[0:])):
     # Setting up plot
     fig,axs = plt.subplots(3,figsize=(8.5,11),dpi=300)
     #pv.start_xvfb()
-    vp.plot2D(file,field,bounds,ax=axs[0])
+    
+    # Plot suture results and strain
+    vp.plot2D(file,'rift_side',bounds=bounds,ax=axs[0])
+    vp.plot2D(file,field,bounds,ax=axs[0], cmap=cm_strain, 
+            opacity=opacity_strain, clim=lim_strain)
     axs[0].set_title('Model '+str(k+1))
 
     for side, df in zip(['left', 'right'], [left_df, right_df]):
