@@ -116,8 +116,11 @@ for k,model in enumerate(tqdm(models[0:])):
     # Plot suture results and strain
     vp.plot2D(file,'rift_side',bounds=bounds,ax=axs[0])
     vp.plot2D(file,field,bounds,ax=axs[0], cmap=cm_strain, 
-            opacity=opacity_strain, clim=lim_strain)
+              opacity=opacity_strain, clim=lim_strain)
     axs[0].set_title('Model '+str(k+1))
+
+    # Plotting strain by x-value for each side
+    max_strain = np.max(df.groupby(['X'])['Strain'].sum())
 
     for side, df in zip(['left', 'right'], [left_df, right_df]):
         print(k)
@@ -135,7 +138,7 @@ for k,model in enumerate(tqdm(models[0:])):
         y_smoothed = savgol_filter(y_values,25,polyorder=3)
         
         # Normalized smoothed strain using maximum strain value
-        y_normalized = y_smoothed/np.max(y_smoothed)
+        y_normalized = y_smoothed / max_strain               #np.max(y_smoothed)
         '''
     peaks = find_peaks(y_normalized,height=0.98,prominence=0.1,rel_height=0.9)
     peak_indices = peaks[0]
