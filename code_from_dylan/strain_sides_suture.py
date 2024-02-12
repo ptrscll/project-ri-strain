@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import mpltern
 from scipy.signal import savgol_filter,find_peaks,peak_widths
 from scipy.stats import skew,mode
+from scipy.spatial import KDTree
 from tqdm import tqdm
 
 import pyvista as pv
@@ -45,7 +46,7 @@ import vtk_plot as vp
 #          '080122_rip_a','080122_rip_e','080122_rip_b','080122_rip_f',
 #          '080122_rip_c','080122_rip_g','080122_rip_d','080122_rip_h']
 
-models = ['063022_rip_c', '071822_rip_b','070422_rip_e']
+models = ['063022_rip_c']
 
 names = ['Model ' + str(x) for x in range(1,17)]
 
@@ -100,6 +101,33 @@ for k,model in enumerate(tqdm(models[0:])):
     bounds_mesh = [bound*1e3 for bound in bounds] + [0,0]
     clipped = mesh.clip_box(bounds_mesh)
 
+    # Finding if the nearest particles have different values for 'rift_side'
+    particles = clipped.points
+    particle_tree = KDTree(particles)
+    suture_indices = []
+
+    for i in range(len(particles)):
+        dists, indices = particle_tree.query(particles[i], k=2)
+        nearest_id = indices[1]
+
+        # Checking if the nearest particle is on the opposite side of the rift
+        # This uses ceiling division by 3 to perform the check
+        if -(clipped['rift_side'][nearest_id] // -3) != -(clipped['rift_side'][i] // -3):
+            suture_indices.append(i)
+
+    print(len(suture_indices))
+    clipped['rift_side'][suture_indices] = 7
+
+    # Plotting results (to ensure accuracy)
+    fig,ax = plt.subplots(1,figsize=(8.5,11),dpi=300)
+    ax.scatter(particles[suture_indices, 0], particles[suture_indices, 1])
+    plt.savefig("suture_test.pdf")
+
+
+
+    '''
+
+
     # Get all strain values
     x = clipped.points[:,0]
     x_rounded = np.round(x,-3)
@@ -145,70 +173,9 @@ for k,model in enumerate(tqdm(models[0:])):
         
         # Normalized smoothed strain using maximum strain value
         y_normalized = y_smoothed / max_strain               #np.max(y_smoothed)
-        '''
-    peaks = find_peaks(y_normalized,height=0.98,prominence=0.1,rel_height=0.9)
-    peak_indices = peaks[0]
-    x_peaks = x_values[peak_indices]
-    heights = peaks[1]['peak_heights']
-    
-    widths,width_heights,left_ips,right_ips = peak_widths(y_normalized,peak_indices,
-                                                          rel_height=0.9)
-    min_x_peaks = x_values[left_ips.astype(int)]
-    max_x_peaks = x_values[right_ips.astype(int)]
-    
-    widths_x = max_x_peaks-min_x_peaks
-    
-    widths_norm = np.array(widths_x).sum()/400
-    
-    localization = 1-widths_norm
-    final.loc[k+1,'Localization'] = localization
-    
-    areas = np.array([])
-    left_areas = np.array([])
-    right_areas = np.array([])
-    for n,peak in enumerate(x_peaks):
-        
-        y_limited = y_normalized[left_ips.astype(int)[n]:right_ips.astype(int)[n]]
-        area = np.trapz(y_limited)
-        areas = np.append(areas,area)
-        
-        y_left = y_normalized[left_ips.astype(int)[n]:peak_indices[n]]
-        y_right = y_normalized[peak_indices[n]:right_ips.astype(int)[n]]
-        
-        left_area = np.trapz(y_left)
-        right_area = np.trapz(y_right)
-        left_areas = np.append(left_areas,left_area)
-        right_areas = np.append(right_areas,right_area)
-        
-        percentile25 = np.percentile(y_normalized,25)
-        percentile75 = np.percentile(y_normalized,75)
-        
-    
-    total_area = np.trapz(y_normalized)
-    
-    symmetry = left_areas/right_areas
-    symmetry_corrected = np.reciprocal(symmetry,out=symmetry,where=(symmetry>1))
-    final.loc[k+1,'Symmetry'] = symmetry_corrected
-    
-    cness = symmetry_corrected*localization
-    final.loc[k+1,'C-ness'] = cness
-    
-    
-    area_ratio = np.sum(areas)/total_area
-    hw_ratio = heights/widths_x
-        '''
         print('\nModel ',k+1)
         print('Side: ', side)
-        
-        '''
-        print('Area ratio: ',area_ratio)
-        print('Heights: ',heights)
-    print('Widths: ',widths_norm)
-    print('Height/width ratios: ',np.array(hw_ratio))
-    print('Left Areas: ',left_areas)
-    print('Right Areas: ',right_areas)
-    print('Symmetry: ',symmetry_corrected)
-        '''
+
         axs[1].plot(x_values,y_values)
         axs[2].plot(x_values,y_normalized)
         #axs[2].scatter(x_peaks,heights,c='red')
@@ -222,40 +189,4 @@ for k,model in enumerate(tqdm(models[0:])):
     plt.tight_layout()
         
     fig.savefig(output_dir + str(k+1)+'_strain_sides_results.pdf')
-'''
-plt.rcParams['axes.prop_cycle'] = plt.cycler(color=plt.cm.tab20.colors)  
- 
-fig,ax = plt.subplots(1)
-
-for k,row in final.iterrows():
-    ax.scatter(row['Localization'],row['Symmetry'],label=k)
-    ax.annotate(k,(row['Localization'],row['Symmetry']))
-    
-ax.legend(bbox_to_anchor=(-0.2, 1))
-ax.set_xlabel('Localization')
-ax.set_ylabel('Symmetry')
-
-fig.savefig(output_dir + 'localsym.pdf')
-
-fig,ax = plt.subplots(1,subplot_kw={'projection': 'ternary'})
-
-cness_zeroed = final['C-ness']-final['C-ness'].min()
-cness_norm = cness_zeroed/cness_zeroed.max()
-
-local_zeroed = final['Localization']-final['Localization'].min()
-local_norm = local_zeroed/local_zeroed.max()
-
-symm_zeroed = final['Symmetry']-final['Symmetry'].min()
-symm_norm = symm_zeroed/symm_zeroed.max()
-
-aness_norm = 1-symm_norm
-
-bness = (1-local_norm)*symm_norm
-bness_norm = bness/bness.max()
-
-for k,row in final.iterrows():
-    ax.scatter(cness_norm[k],aness_norm[k],bness_norm[k],label=k)
-ax.legend(bbox_to_anchor=(0, 1))
-
-fig.savefig(output_dir + 'ternary.pdf')
-'''
+    '''
