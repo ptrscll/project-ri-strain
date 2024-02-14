@@ -64,27 +64,7 @@ cm_strain = 'inferno'
 # Create dataframe for final values
 final = pd.DataFrame([],columns=['Localization','Symmetry','C-ness'])
 
-# TODO: Figure out how to get the correct combo of directories
 for k,model in enumerate(tqdm(models[0:])):
-
-    '''
-    # Get the appropriate pvtu file
-    base_dir = r'/mnt/d459dc32-537b-41a9-9d32-483256cce117/riftinversion_production/'
-    suffix = r'/output_ri_rift/solution'
-    pvtu_dir = base_dir + model + suffix
-    
-    # Figure out appropriate timesteps
-    tstep_invert = int((times[k]+invert_times[k])/tstep_interval)
-    
-    if model == '080122_rip_a':
-        tstep_invert = 194
-    if model =='080122_rip_e':
-        tstep_invert = 395
-    
-    # Pull the file locations
-    file = vp.get_pvtu(pvtu_dir,tstep_invert)
-    mesh = pv.read(file)
-    '''
 
     # Setting up variables for plotting loop
     side_dir = r'figs/'
@@ -114,8 +94,9 @@ for k,model in enumerate(tqdm(models[0:])):
     
     
         # Splitting the table into left and right sides of the suture
-        left_df = df[df['Side&Layer'] <= 3]
+        left_df = df[(df['Side&Layer'] <= 3) & (df['Side&Layer'] != 0)]
         right_df = df[df['Side&Layer'] >= 4]
+        asth_df = df[df['Side&Layer'] == 0]
 
         # Setting up plots
         #pv.start_xvfb()
@@ -129,7 +110,10 @@ for k,model in enumerate(tqdm(models[0:])):
         # Plotting strain by x-value for each side
         max_strain = np.max(df.groupby(['X'])['Strain'].sum())
 
-        for side, df in zip(['left', 'right'], [left_df, right_df]):        
+        for side, df in zip(['left', 'right', 'asth'], [left_df, right_df, asth_df]):  
+            # Quitting the loop if asthenosphere dataframe is empty
+            if df.empty:
+                break
             # Sum strains along same x and clip
             strains_summed = df.groupby(['X']).sum()
             strains_summed_clipped = strains_summed[3e5:7e5+1]
@@ -139,121 +123,17 @@ for k,model in enumerate(tqdm(models[0:])):
             y_values = strains_summed_clipped['Strain']
         
             # Use filter to smooth strains
-            y_smoothed = savgol_filter(y_values,25,polyorder=3)
+            y_smoothed = y_values
+            if len(df) >= 25:
+                y_smoothed = savgol_filter(y_values,25,polyorder=3)
         
             # Normalized smoothed strain using maximum strain value
             y_normalized = y_smoothed / max_strain               #np.max(y_smoothed)
-            '''
-    peaks = find_peaks(y_normalized,height=0.98,prominence=0.1,rel_height=0.9)
-    peak_indices = peaks[0]
-    x_peaks = x_values[peak_indices]
-    heights = peaks[1]['peak_heights']
-    
-    widths,width_heights,left_ips,right_ips = peak_widths(y_normalized,peak_indices,
-                                                          rel_height=0.9)
-    min_x_peaks = x_values[left_ips.astype(int)]
-    max_x_peaks = x_values[right_ips.astype(int)]
-    
-    widths_x = max_x_peaks-min_x_peaks
-    
-    widths_norm = np.array(widths_x).sum()/400
-    
-    localization = 1-widths_norm
-    final.loc[k+1,'Localization'] = localization
-    
-    areas = np.array([])
-    left_areas = np.array([])
-    right_areas = np.array([])
-    for n,peak in enumerate(x_peaks):
-        
-        y_limited = y_normalized[left_ips.astype(int)[n]:right_ips.astype(int)[n]]
-        area = np.trapz(y_limited)
-        areas = np.append(areas,area)
-        
-        y_left = y_normalized[left_ips.astype(int)[n]:peak_indices[n]]
-        y_right = y_normalized[peak_indices[n]:right_ips.astype(int)[n]]
-        
-        left_area = np.trapz(y_left)
-        right_area = np.trapz(y_right)
-        left_areas = np.append(left_areas,left_area)
-        right_areas = np.append(right_areas,right_area)
-        
-        percentile25 = np.percentile(y_normalized,25)
-        percentile75 = np.percentile(y_normalized,75)
-        
-    
-    total_area = np.trapz(y_normalized)
-    
-    symmetry = left_areas/right_areas
-    symmetry_corrected = np.reciprocal(symmetry,out=symmetry,where=(symmetry>1))
-    final.loc[k+1,'Symmetry'] = symmetry_corrected
-    
-    cness = symmetry_corrected*localization
-    final.loc[k+1,'C-ness'] = cness
-    
-    
-    area_ratio = np.sum(areas)/total_area
-    hw_ratio = heights/widths_x
-            '''
+            
 
-
-        
-            '''
-        print('Area ratio: ',area_ratio)
-        print('Heights: ',heights)
-    print('Widths: ',widths_norm)
-    print('Height/width ratios: ',np.array(hw_ratio))
-    print('Left Areas: ',left_areas)
-    print('Right Areas: ',right_areas)
-    print('Symmetry: ',symmetry_corrected)
-            '''
             axs[i][1].plot(x_values,y_values)
             axs[i][2].plot(x_values,y_normalized)
-        #axs[2].scatter(x_peaks,heights,c='red')
-        #axs[2].hlines(y=width_heights,xmin=min_x_peaks,xmax=max_x_peaks,color='red')
-    
-        #axs[3].scatter(x_peaks,symmetry_corrected)
-        #axs[3].set_xlim(300,700)
-        #axs[3].set_ylim(0,1)
-        #axs[3].scatter([400,600],[percentile25,percentile75])
          
     plt.tight_layout()
         
     fig.savefig(output_dir + str(k+1)+'_strain_sides_time_results.pdf')
-'''
-plt.rcParams['axes.prop_cycle'] = plt.cycler(color=plt.cm.tab20.colors)  
- 
-fig,ax = plt.subplots(1)
-
-for k,row in final.iterrows():
-    ax.scatter(row['Localization'],row['Symmetry'],label=k)
-    ax.annotate(k,(row['Localization'],row['Symmetry']))
-    
-ax.legend(bbox_to_anchor=(-0.2, 1))
-ax.set_xlabel('Localization')
-ax.set_ylabel('Symmetry')
-
-fig.savefig(output_dir + 'localsym.pdf')
-
-fig,ax = plt.subplots(1,subplot_kw={'projection': 'ternary'})
-
-cness_zeroed = final['C-ness']-final['C-ness'].min()
-cness_norm = cness_zeroed/cness_zeroed.max()
-
-local_zeroed = final['Localization']-final['Localization'].min()
-local_norm = local_zeroed/local_zeroed.max()
-
-symm_zeroed = final['Symmetry']-final['Symmetry'].min()
-symm_norm = symm_zeroed/symm_zeroed.max()
-
-aness_norm = 1-symm_norm
-
-bness = (1-local_norm)*symm_norm
-bness_norm = bness/bness.max()
-
-for k,row in final.iterrows():
-    ax.scatter(cness_norm[k],aness_norm[k],bness_norm[k],label=k)
-ax.legend(bbox_to_anchor=(0, 1))
-
-fig.savefig(output_dir + 'ternary.pdf')
-'''

@@ -106,8 +106,9 @@ for k,model in enumerate(tqdm(models[0:])):
 
     
     # Splitting the table into left and right sides of the suture
-    left_df = df[df['Side&Layer'] <= 3]
+    left_df = df[(df['Side&Layer'] <= 3) & (df['Side&Layer'] != 0)]
     right_df = df[df['Side&Layer'] >= 4]
+    asth_df = df[df['Side&Layer'] == 0]
 
     # Setting up plot
     fig,axs = plt.subplots(3,figsize=(8.5,11),dpi=300)
@@ -122,7 +123,11 @@ for k,model in enumerate(tqdm(models[0:])):
     # Plotting strain by x-value for each side
     max_strain = np.max(df.groupby(['X'])['Strain'].sum())
 
-    for side, df in zip(['left', 'right'], [left_df, right_df]):
+    for side, df in zip(['left', 'right', 'asth'], [left_df, right_df, asth_df]):
+        # Quitting the loop if asthenosphere dataframe is empty
+        if df.empty:
+            break
+
         print(k)
         print(df.head())
 
@@ -215,7 +220,7 @@ for k,model in enumerate(tqdm(models[0:])):
          
     plt.tight_layout()
         
-    fig.savefig(output_dir + str(k+1)+'_strain_sides_results.pdf')
+    fig.savefig(output_dir + str(k+1)+'_strain_sides_asth.pdf')
 '''
 plt.rcParams['axes.prop_cycle'] = plt.cycler(color=plt.cm.tab20.colors)  
  
