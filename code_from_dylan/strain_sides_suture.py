@@ -40,17 +40,17 @@ import vtk_plot as vp
 # hot_fast_full_qui 080122_rip_h
 
 # Make list of models with appropriate names
-#models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
-#          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
+models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
+          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
 # Fast models (for reference when analyzing them later):
 #          '080122_rip_a','080122_rip_e','080122_rip_b','080122_rip_f',
 #          '080122_rip_c','080122_rip_g','080122_rip_d','080122_rip_h']
 
-models = ['063022_rip_c']
+#models = ['063022_rip_c']
 
 names = ['Model ' + str(x) for x in range(1,17)]
 
-output_dir = r'results/strain_sides/'
+output_dir = r'results/suture_points/'
 
 # Indicate time of final rift of reach model (post-cooling)
 
@@ -113,15 +113,17 @@ for k,model in enumerate(tqdm(models[0:])):
         # Checking if the nearest particle is on the opposite side of the rift
         # This uses ceiling division by 3 to perform the check
         if -(clipped['rift_side'][nearest_id] // -3) != -(clipped['rift_side'][i] // -3):
-            suture_indices.append(i)
-
+            # Ensuring points are both in the lithosphere
+            if clipped['rift_side'][i] > 0 and clipped['rift_side'][nearest_id] > 0:
+                suture_indices.append(i)
+            
     print(len(suture_indices))
     clipped['rift_side'][suture_indices] = 7
 
     # Plotting results (to ensure accuracy)
     fig,ax = plt.subplots(1,figsize=(8.5,11),dpi=300)
     ax.scatter(particles[suture_indices, 0], particles[suture_indices, 1])
-    plt.savefig("suture_test.pdf")
+    plt.savefig(output_dir + str(k+1) + "suture_no_asth" + ".pdf")
 
 
 
