@@ -3,8 +3,7 @@ Script to do strain analysis on either side of the suture for initial rift inver
 Model is split into 3 zones (left, suture, and right)
 
 TODO:
-    Get way to track y-vals
-    Identify the points right on the suture
+    Improve identification of points right on the suture
     Figure out how to extend the suture (and how far to extend it)
 """
 import numpy as np
