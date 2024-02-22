@@ -90,8 +90,8 @@ for k,model in enumerate(tqdm(models[0:])):
     mesh = pv.read(file)
     '''
     side_dir = r'figs/'
-    #file = side_dir + model + '/' + model + '_10.vtu'
-    file = side_dir + model + '/' + model + '_0.vtu'
+    file = side_dir + model + '/' + model + '_10.vtu'
+    #file = side_dir + model + '/' + model + '_0.vtu'
     if model == '071322_rip':
         file = side_dir + model + '/' + model + '_9.vtu'
     mesh = pv.read(file)
@@ -101,6 +101,7 @@ for k,model in enumerate(tqdm(models[0:])):
 
     # Finding if the nearest particles have different values for 'rift_side'
     particles = clipped.points
+    print('Total particles:', len(particles))
     particle_tree = KDTree(particles)
     suture_indices = []
 
@@ -113,7 +114,9 @@ for k,model in enumerate(tqdm(models[0:])):
         if -(clipped['rift_side'][nearest_id] // -3) != -(clipped['rift_side'][i] // -3):
             # Ensuring points are both in the lithosphere
             #if clipped['rift_side'][i] > 0 and clipped['rift_side'][nearest_id] > 0:
-            suture_indices.append(i)
+            if not np.isnan(clipped['rift_side'][nearest_id]) and not np.isnan(clipped['rift_side'][i]):
+                suture_indices.append(i)
+
             
     print(len(suture_indices))
     clipped['rift_side'][suture_indices] = 7
@@ -121,7 +124,7 @@ for k,model in enumerate(tqdm(models[0:])):
     # Plotting results (to ensure accuracy)
     fig,ax = plt.subplots(1,figsize=(8.5,11),dpi=300)
     ax.scatter(particles[suture_indices, 0], particles[suture_indices, 1])
-    plt.savefig(output_dir + str(nums[k] + 1) + "initial_suture" + ".pdf")
+    plt.savefig(output_dir + str(nums[k] + 1) + "_suture_no_nan" + ".pdf")
 
 
 

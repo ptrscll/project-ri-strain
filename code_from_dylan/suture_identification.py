@@ -70,6 +70,12 @@ cm_strain = 'inferno'
 # Create dataframe for final values
 final = pd.DataFrame([],columns=['Localization','Symmetry','C-ness'])
 
+#Distance threshold for being on the suture
+max_dist = 1000.0
+
+# Starting number of neighbors to check (for efficiency)
+init_neighbors = 125
+
 # TODO: Figure out how to get the correct combo of directories
 for k,model in enumerate(tqdm(models[0:])):
 
@@ -103,18 +109,43 @@ for k,model in enumerate(tqdm(models[0:])):
     # Finding if the nearest particles have different values for 'rift_side'
     particles = clipped.points
     particle_tree = KDTree(particles)
-    suture_indices = []
+    suture_indices = set()
 
-    for i in range(len(particles)):
-        dists, indices = particle_tree.query(particles[i], k=2)
-        nearest_id = indices[1]
+    for i in tqdm(range(len(particles))):
 
-        # Checking if the nearest particle is on the opposite side of the rift
-        # This uses ceiling division by 3 to perform the check
-        if -(clipped['rift_side'][nearest_id] // -3) != -(clipped['rift_side'][i] // -3):
-            # Ensuring points are both in the lithosphere
-            if clipped['rift_side'][i] > 0 and clipped['rift_side'][nearest_id] > 0:
-                suture_indices.append(i)
+        # Verifying we're not dealing with the asthenosphere or NaNs or already checked particles
+        if (clipped['rift_side'][i] != 0 and 
+            i not in suture_indices and 
+            not np.isnan(clipped['rift_side'][i])):
+
+            # Setting up the variables
+            num_neighbors = init_neighbors
+            dists, indices = particle_tree.query(particles[i], k=num_neighbors)
+            is_suture = False
+            j = 1
+
+            # Iterating through the particles until we run out or find one on opposite side
+            while not is_suture and dists[j] < max_dist:
+                nearest_id = indices[j]
+
+                # Checking if the nearest particle is on the opposite side of the rift
+                # This uses ceiling division by 3 to perform the check
+                if -(clipped['rift_side'][nearest_id] // -3) != -(clipped['rift_side'][i] // -3):
+
+                    # Ensuring other point is also in lithosphere and not NaN
+                    if (clipped['rift_side'][nearest_id] != 0 and 
+                        not np.isnan(clipped['rift_side'][nearest_id])):
+                        suture_indices.add(i)
+                        suture_indices.add(nearest_id)
+
+
+                j += 1
+
+                # Expanding the search
+                if j == num_neighbors:
+                    num_neighbors *= 2
+                    dists, indices = particle_tree.query(particles[i], k=num_neighbors)
+
             
     print(len(suture_indices))
     clipped['rift_side'][suture_indices] = 7
@@ -122,7 +153,7 @@ for k,model in enumerate(tqdm(models[0:])):
     # Plotting results (to ensure accuracy)
     fig,ax = plt.subplots(1,figsize=(8.5,11),dpi=300)
     ax.scatter(particles[suture_indices, 0], particles[suture_indices, 1])
-    plt.savefig(output_dir + str(k+1) + "suture_no_asth" + ".pdf")
+    plt.savefig(output_dir + str(k+1) + "_suture_zone" + ".pdf")
 
 
 
