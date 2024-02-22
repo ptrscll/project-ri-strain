@@ -148,11 +148,11 @@ for k,model in enumerate(tqdm(models[0:])):
 
             
     print(len(suture_indices))
-    clipped['rift_side'][suture_indices] = 7
+    clipped['rift_side'][list(suture_indices)] = 7
 
     # Plotting results (to ensure accuracy)
     fig,ax = plt.subplots(1,figsize=(8.5,11),dpi=300)
-    ax.scatter(particles[suture_indices, 0], particles[suture_indices, 1])
+    ax.scatter(particles[list(suture_indices), 0], particles[list(suture_indices), 1])
     plt.savefig(output_dir + str(k+1) + "_suture_zone" + ".pdf")
 
 
