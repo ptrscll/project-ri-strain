@@ -130,7 +130,7 @@ def get_previous_scalar_KDTree(particle,position,old_particles,old_scalars,
     if (scalar.size == 0) & (interpolate == False):
         new_scalar = np.nan
     
-    elif (scalar.size == 0) & (interpolate == True):
+    elif (scalar.size != 1) & (interpolate == True):
         
         # Find index of nearest neighbor
         distance,index = tree.query(position)
@@ -149,7 +149,7 @@ def get_previous_scalar_KDTree(particle,position,old_particles,old_scalars,
         new_scalar = float(scalar)
 
     else:
-        # Skip if duplicates of particle id
+        # Skip if duplicates of particle id and no interpolation
         new_scalar = np.nan
 
     return(new_scalar)    

@@ -14,11 +14,11 @@ import pyvista_vis
 import pyvista as pv
 
 
-#models = ['071822_rip_b', '070422_rip_e', '072022_rip_a',
-#          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
-models = ['071822_rip_b']
+models = ['063022_rip_c','071822_rip_b', '070422_rip_e', '072022_rip_a',
+          '070422_rip_c','071322_rip','070622_rip_a','072022_rip_b']
+#models = ['071822_rip_b']
 
-names = ['Slow/Cold Half-Breakup w/ Cooling',
+names = ['Slow/Cold Half-Breakup', 'Slow/Cold Half-Breakup w/ Cooling',
          'Slow/Cold Full-Breakup','Slow/Cold Full-Breakup w/ Cooling',
         'Hot/Fast Half-Breakup','Hot/Fast  Half-Breakup w/ Cooling',
          'Hot/Fast  Full-Breakup','Hot/Fast Full-Breakup w/ Cooling']
@@ -26,8 +26,8 @@ names = ['Slow/Cold Half-Breakup w/ Cooling',
 
 # Indicate time of final rift of reach model (post-cooling)
 
-#times = [36,32,52,7.3,27.3,14.5,34.5]
-times = [36]
+times = [16,36,32,52,7.3,27.3,14.5,34.5]
+#times = [36]
 tstep_interval = 0.1
 
 base_dir = r'/mnt/d459dc32-537b-41a9-9d32-483256cce117/riftinversion_production/'
