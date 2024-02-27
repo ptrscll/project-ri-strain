@@ -115,7 +115,10 @@ for k,model in enumerate(tqdm(models[0:])):
             # Ensuring points are both in the lithosphere
             #if clipped['rift_side'][i] > 0 and clipped['rift_side'][nearest_id] > 0:
             if not np.isnan(clipped['rift_side'][nearest_id]) and not np.isnan(clipped['rift_side'][i]):
-                suture_indices.append(i)
+                if clipped['rift_side'][nearest_id] != 0 and clipped['rift_side'][i] != 0:
+                    suture_indices.append(i)
+            elif np.isnan(clipped['rift_side'][i]):
+                print("NaN detected")
 
             
     print(len(suture_indices))
@@ -124,7 +127,7 @@ for k,model in enumerate(tqdm(models[0:])):
     # Plotting results (to ensure accuracy)
     fig,ax = plt.subplots(1,figsize=(8.5,11),dpi=300)
     ax.scatter(particles[suture_indices, 0], particles[suture_indices, 1])
-    plt.savefig(output_dir + str(nums[k] + 1) + "_suture_no_nan" + ".pdf")
+    plt.savefig(output_dir + str(nums[k] + 1) + "_suture_no_nan_or_asth" + ".pdf")
 
 
 

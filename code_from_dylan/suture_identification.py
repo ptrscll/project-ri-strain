@@ -49,7 +49,7 @@ models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
 
 names = ['Model ' + str(x) for x in range(1,17)]
 
-output_dir = r'results/suture_points/'
+output_dir = r'results/suture_zones/'
 
 # Indicate time of final rift of reach model (post-cooling)
 
