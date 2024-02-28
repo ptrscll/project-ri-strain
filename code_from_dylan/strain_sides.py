@@ -85,7 +85,7 @@ for k,model in enumerate(tqdm(models[0:])):
     file = vp.get_pvtu(pvtu_dir,tstep_invert)
     mesh = pv.read(file)
     '''
-    side_dir = r'figs/'
+    side_dir = r'predef_suture_figs/'
     file = side_dir + model + '/' + model + '_10.vtu'
     if model == '071322_rip':
         file = side_dir + model + '/' + model + '_9.vtu'
@@ -107,7 +107,8 @@ for k,model in enumerate(tqdm(models[0:])):
     
     # Splitting the table into left and right sides of the suture
     left_df = df[(df['Side&Layer'] <= 3) & (df['Side&Layer'] != 0)]
-    right_df = df[df['Side&Layer'] >= 4]
+    right_df = df[(df['Side&Layer'] > 3) & (df['Side&Layer'] <= 6)]
+    suture_df = df[df['Side&Layer'] > 6]
     asth_df = df[df['Side&Layer'] == 0]
 
     # Setting up plot
@@ -123,7 +124,7 @@ for k,model in enumerate(tqdm(models[0:])):
     # Plotting strain by x-value for each side
     max_strain = np.max(df.groupby(['X'])['Strain'].sum())
 
-    for side, df in zip(['left', 'right', 'asth'], [left_df, right_df, asth_df]):
+    for side, df in zip(['left', 'right', 'suture', 'asth'], [left_df, right_df, suture_df, asth_df]):
         # Quitting the loop if asthenosphere dataframe is empty
         if df.empty:
             break
@@ -140,7 +141,10 @@ for k,model in enumerate(tqdm(models[0:])):
         y_values = strains_summed_clipped['Strain']
         
         # Use filter to smooth strains
-        y_smoothed = savgol_filter(y_values,25,polyorder=3)
+        if len(y_values) > 25:
+            y_smoothed = savgol_filter(y_values,25,polyorder=3)
+        else:
+            y_smoothed = y_values
         
         # Normalized smoothed strain using maximum strain value
         y_normalized = y_smoothed / max_strain               #np.max(y_smoothed)
@@ -208,7 +212,7 @@ for k,model in enumerate(tqdm(models[0:])):
     print('Right Areas: ',right_areas)
     print('Symmetry: ',symmetry_corrected)
         '''
-        axs[1].plot(x_values,y_values)
+        axs[1].plot(x_values,y_values, label=side)
         axs[2].plot(x_values,y_normalized)
         #axs[2].scatter(x_peaks,heights,c='red')
         #axs[2].hlines(y=width_heights,xmin=min_x_peaks,xmax=max_x_peaks,color='red')
@@ -218,9 +222,10 @@ for k,model in enumerate(tqdm(models[0:])):
         #axs[3].set_ylim(0,1)
         #axs[3].scatter([400,600],[percentile25,percentile75])
          
+    axs[1].legend()
     plt.tight_layout()
         
-    fig.savefig(output_dir + str(k+1)+'_strain_sides_asth.pdf')
+    fig.savefig(output_dir + str(k+1)+'_predef_strain_sides.pdf')
 '''
 plt.rcParams['axes.prop_cycle'] = plt.cycler(color=plt.cm.tab20.colors)  
  
