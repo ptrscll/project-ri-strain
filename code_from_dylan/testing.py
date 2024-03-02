@@ -44,8 +44,8 @@ models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
 models = [models[3], models[7]]
 
 #names = ['Model ' + str(x) for x in range(1,17)]
-names = ["Model 3", "Model 7"]
-nums = [3, 7]
+names = ["Model 4"]
+nums = [3]
 
 output_dir = r'results/suture_points/'
 
@@ -90,9 +90,9 @@ for k,model in enumerate(tqdm(models[0:])):
     mesh = pv.read(file)
     '''
     side_dir = r'figs/'
-    #file = side_dir + model + '/' + model + '_10.vtu'
+    file = side_dir + model + '/' + model + '_10.vtu'
     #file = side_dir + model + '/' + model + '_0.vtu'
-    file = 'test.vtu'
+    #file = 'test.vtu'
     if model == '071322_rip':
         file = side_dir + model + '/' + model + '_9.vtu'
     mesh = pv.read(file)
@@ -107,6 +107,8 @@ for k,model in enumerate(tqdm(models[0:])):
     suture_indices = []
 
     for i in range(len(particles)):
+
+        '''
         dists, indices = particle_tree.query(particles[i], k=2)
         nearest_id = indices[1]
 
@@ -120,11 +122,12 @@ for k,model in enumerate(tqdm(models[0:])):
                     suture_indices.append(i)
             elif np.isnan(clipped['rift_side'][i]):
                 print("NaN detected")
-
-        if clipped['rift_side'] == 7:
+        '''
+        if clipped['rift_side'][i] == 7:
             print("YAY")
     print(len(suture_indices))
     clipped['rift_side'][suture_indices] = 7
+    pv.start_xvfb()
     clipped.save('test.vtu')
 
     # Plotting results (to ensure accuracy)
