@@ -90,8 +90,9 @@ for k,model in enumerate(tqdm(models[0:])):
     mesh = pv.read(file)
     '''
     side_dir = r'figs/'
-    file = side_dir + model + '/' + model + '_10.vtu'
+    #file = side_dir + model + '/' + model + '_10.vtu'
     #file = side_dir + model + '/' + model + '_0.vtu'
+    file = 'test.vtu'
     if model == '071322_rip':
         file = side_dir + model + '/' + model + '_9.vtu'
     mesh = pv.read(file)
@@ -120,9 +121,11 @@ for k,model in enumerate(tqdm(models[0:])):
             elif np.isnan(clipped['rift_side'][i]):
                 print("NaN detected")
 
-            
+        if clipped['rift_side'] == 7:
+            print("YAY")
     print(len(suture_indices))
     clipped['rift_side'][suture_indices] = 7
+    clipped.save('test.vtu')
 
     # Plotting results (to ensure accuracy)
     fig,ax = plt.subplots(1,figsize=(8.5,11),dpi=300)
