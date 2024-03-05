@@ -15,6 +15,7 @@ from scipy.signal import savgol_filter,find_peaks,peak_widths
 from scipy.stats import skew,mode
 from scipy.spatial import KDTree
 from tqdm import tqdm
+from joblib import Parallel, delayed
 
 import pyvista as pv
 import vtk_plot as vp
@@ -110,9 +111,11 @@ for k,model in enumerate(tqdm(models[0:])):
     particles = clipped.points
     particle_tree = KDTree(particles)
     suture_indices = set()
-
-    for i in tqdm(range(len(particles))):
-
+    
+    # Function to determine if i is a suture index and add it to suture_indices
+    # (Declaring it here may be bad practice, but it avoids having to pass it a ton of variables)
+    def find_suture_zone(i):
+        #for i in tqdm(range(len(particles))):
         # Verifying we're not dealing with the asthenosphere or NaNs or already checked particles
         if (clipped['rift_side'][i] != 0 and 
             i not in suture_indices and 
@@ -146,7 +149,10 @@ for k,model in enumerate(tqdm(models[0:])):
                     num_neighbors *= 2
                     dists, indices = particle_tree.query(particles[i], k=num_neighbors)
 
-            
+    Parallel(n_jobs=36, batch_size=10000)(
+             delayed(find_suture_zone)(i)
+             for i in tqdm(range(len(particles)))
+             )
     print(len(suture_indices))
     clipped['rift_side'][list(suture_indices)] = 7
 
