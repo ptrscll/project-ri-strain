@@ -69,11 +69,11 @@ for k,model in enumerate(models):
     
 
     # Finding dimensions of initial "suture"
-    min_lith_thickness = 600000.0 - np.max(asth_y_values)
+    #min_lith_thickness = 600000.0 - np.max(asth_y_values)
 
-    suture_width = (100.0 * 1000.0 * 1000.0) / min_lith_thickness
+    suture_width = 100.0 * 1000.0 
 
-    print("thickness: ", min_lith_thickness)
+    #print("thickness: ", min_lith_thickness)
     print("width: ", suture_width)
 
     # Finding cutoff points for suture
