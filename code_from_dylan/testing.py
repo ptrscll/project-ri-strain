@@ -126,14 +126,15 @@ for k,model in enumerate(tqdm(models[0:])):
         if clipped['rift_side'][i] == 7:
             print("YAY")
     print(len(suture_indices))
+    clipped['rift_side'][0] = 7 # this is solely for testing so i don't have to run the commented out stuff above
     clipped['rift_side'][suture_indices] = 7
     pv.start_xvfb()
     clipped.save('test.vtu')
 
     # Plotting results (to ensure accuracy)
-    fig,ax = plt.subplots(1,figsize=(8.5,11),dpi=300)
-    ax.scatter(particles[suture_indices, 0], particles[suture_indices, 1])
-    plt.savefig(output_dir + str(nums[k] + 1) + "_suture_no_nan_or_asth" + ".pdf")
+    #fig,ax = plt.subplots(1,figsize=(8.5,11),dpi=300)
+    #ax.scatter(particles[suture_indices, 0], particles[suture_indices, 1])
+    #plt.savefig(output_dir + str(nums[k] + 1) + "_suture_no_nan_or_asth" + ".pdf")
 
 
 
