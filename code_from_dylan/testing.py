@@ -92,17 +92,13 @@ for k,model in enumerate(tqdm(models[0:])):
     side_dir = r'figs/'
     file = side_dir + model + '/' + model + '_10.vtu'
     #file = side_dir + model + '/' + model + '_0.vtu'
-    #file = 'test.vtu'
+    file = 'test.vtu'
     if model == '071322_rip':
         file = side_dir + model + '/' + model + '_9.vtu'
     mesh = pv.read(file)
-
-    bounds_mesh = [bound*1e3 for bound in bounds] + [0,0]
-    clipped = mesh.clip_box(bounds_mesh)
-
-    # Finding if the nearest particles have different values for 'rift_side'
-    particles = clipped.points
+    particles = mesh.points
     print('Total particles:', len(particles))
+    # Finding if the nearest particles have different values for 'rift_side'
     particle_tree = KDTree(particles)
     suture_indices = []
 
@@ -123,13 +119,13 @@ for k,model in enumerate(tqdm(models[0:])):
             elif np.isnan(clipped['rift_side'][i]):
                 print("NaN detected")
         '''
-        if clipped['rift_side'][i] == 7:
+        if mesh['rift_side'][i] == 7:
             print("YAY")
     print(len(suture_indices))
-    clipped['rift_side'][0] = 7 # this is solely for testing so i don't have to run the commented out stuff above
-    clipped['rift_side'][suture_indices] = 7
-    pv.start_xvfb()
-    clipped.save('test.vtu')
+    mesh['rift_side'][0] = 7 # this is solely for testing so i don't have to run the commented out stuff above
+    mesh['rift_side'][suture_indices] = 7
+    #pv.start_xvfb()
+    mesh.save('test.vtu')
 
     # Plotting results (to ensure accuracy)
     #fig,ax = plt.subplots(1,figsize=(8.5,11),dpi=300)
