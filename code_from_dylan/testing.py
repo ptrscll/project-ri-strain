@@ -122,8 +122,11 @@ for k,model in enumerate(tqdm(models[0:])):
         if mesh['rift_side'][i] == 7:
             print("YAY")
     print(len(suture_indices))
-    mesh['rift_side'][0] = 7 # this is solely for testing so i don't have to run the commented out stuff above
-    mesh['rift_side'][suture_indices] = 7
+
+    # Seeing if it's an issue with how I setup suture_indices
+    suture_indices = {0}
+    #mesh['rift_side'][0] = 7 # this is solely for testing so i don't have to run the commented out stuff above
+    mesh['rift_side'][list(suture_indices)] = 7
     #pv.start_xvfb()
     mesh.save('test.vtu')
 

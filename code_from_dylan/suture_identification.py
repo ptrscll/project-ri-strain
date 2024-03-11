@@ -104,11 +104,11 @@ for k,model in enumerate(tqdm(models[0:])):
         file = side_dir + model + '/' + model + '_9.vtu'
     mesh = pv.read(file)
 
-    bounds_mesh = [bound*1e3 for bound in bounds] + [0,0]
-    clipped = mesh.clip_box(bounds_mesh)
+    #bounds_mesh = [bound*1e3 for bound in bounds] + [0,0]
+    #clipped = mesh.clip_box(bounds_mesh)
 
     # Finding if the nearest particles have different values for 'rift_side'
-    particles = clipped.points
+    particles = mesh.points
     particle_tree = KDTree(particles)
     suture_indices = set()
     
@@ -117,9 +117,9 @@ for k,model in enumerate(tqdm(models[0:])):
     def find_suture_zone(i):
         #for i in tqdm(range(len(particles))):
         # Verifying we're not dealing with the asthenosphere or NaNs or already checked particles
-        if (clipped['rift_side'][i] != 0 and 
+        if (mesh['rift_side'][i] != 0 and 
             i not in suture_indices and 
-            not np.isnan(clipped['rift_side'][i])):
+            not np.isnan(mesh['rift_side'][i])):
 
             # Setting up the variables
             num_neighbors = init_neighbors
@@ -133,11 +133,11 @@ for k,model in enumerate(tqdm(models[0:])):
 
                 # Checking if the nearest particle is on the opposite side of the rift
                 # This uses ceiling division by 3 to perform the check
-                if -(clipped['rift_side'][nearest_id] // -3) != -(clipped['rift_side'][i] // -3):
+                if -(mesh['rift_side'][nearest_id] // -3) != -(mesh['rift_side'][i] // -3):
 
                     # Ensuring other point is also in lithosphere and not NaN
-                    if (clipped['rift_side'][nearest_id] != 0 and 
-                        not np.isnan(clipped['rift_side'][nearest_id])):
+                    if (mesh['rift_side'][nearest_id] != 0 and 
+                        not np.isnan(mesh['rift_side'][nearest_id])):
                         suture_indices.add(i)
                         suture_indices.add(nearest_id)
 
@@ -149,12 +149,16 @@ for k,model in enumerate(tqdm(models[0:])):
                     num_neighbors *= 2
                     dists, indices = particle_tree.query(particles[i], k=num_neighbors)
 
+    # Finding suture zone (by running things in parallel)
     Parallel(n_jobs=36, batch_size=10000)(
              delayed(find_suture_zone)(i)
              for i in tqdm(range(len(particles)))
              )
+    
+    # Updating mesh
     print(len(suture_indices))
-    clipped['rift_side'][list(suture_indices)] = 7
+    mesh['rift_side'][list(suture_indices)] = 7
+    mesh.save('results/suture_zone_meshes/' + model + '_final.vtu')
 
     # Plotting results (to ensure accuracy)
     fig,ax = plt.subplots(1,figsize=(8.5,11),dpi=300)
