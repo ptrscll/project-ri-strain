@@ -43,7 +43,7 @@ models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
 
 names = ['Model ' + str(x) for x in range(1,17)]
 
-output_dir = r'results/strain_sides_time/'
+output_dir = r'predef_results/100km/strain_sides_time/noninitial_plots'
 
 # Indicate time of final rift of reach model (post-cooling)
 
@@ -60,6 +60,8 @@ field = 'noninitial_plastic_strain'
 opacity_strain = [0, 0.7, 0.7, 0.7, 0.7]
 lim_strain = [0, 5]
 cm_strain = 'inferno'
+subtract_initial = True
+
 
 # Create dataframe for final values
 final = pd.DataFrame([],columns=['Localization','Symmetry','C-ness'])
@@ -72,16 +74,24 @@ for k,model in enumerate(tqdm(models[0:])):
     last_mesh_num = 10
     if model == '071322_rip':
         last_mesh_num = 9
+    bounds_mesh = [bound*1e3 for bound in bounds] +[0,0]
 
     # Setting up figure
     fig, axs = plt.subplots(last_mesh_num + 1, 3, dpi=300, figsize=(11, 17))
+
+    # Setting up dataframe for noninitial strain plotting
+    initial_df = pd.DataFrame()
+    initial_df['left'] = np.zeros(401)
+    initial_df['right'] = np.zeros(401)
+    initial_df['suture'] = np.zeros(401)
+    initial_df['asth'] = np.zeros(401)
 
     # Making plots for each timestep
     for i in range(0, last_mesh_num + 1):
         file = side_dir + model + '/' + model + '_' + str(i) + '.vtu'
         mesh = pv.read(file)
-        bounds_mesh = [bound*1e3 for bound in bounds] + [0,0]
         clipped = mesh.clip_box(bounds_mesh)
+
         # Get all strain values
         x = clipped.points[:,0]
         x_rounded = np.round(x,-3)
@@ -90,8 +100,7 @@ for k,model in enumerate(tqdm(models[0:])):
         strains = clipped[field]
         sides = clipped['rift_side']
         df = pd.DataFrame([x_rounded,strains,sides]).T
-        df.columns = ['X','Strain', 'Side&Layer']
-    
+        df.columns = ['X','Strain', 'Side&Layer']    
     
         # Splitting the table into left and right sides of the suture
         left_df = df[(df['Side&Layer'] <= 3) & (df['Side&Layer'] != 0)]
@@ -118,7 +127,15 @@ for k,model in enumerate(tqdm(models[0:])):
             # Sum strains along same x and clip
             strains_summed = df.groupby(['X']).sum()
             strains_summed_clipped = strains_summed[3e5:7e5+1]
-        
+            
+            # Subtract out the initial strain (if needed)
+            if subtract_initial:
+                # Getting initial strains (if needed)
+                if i == 0:
+                    # TODO: Get these dimensions to line up wayyyy nicer lol
+                    initial_df[side][int(strains_summed_clipped.index/1000) - 300] += strains_summed_clipped
+                strains_summed_clipped -= initial_df[side]
+
             # Isolate x values (km) and strains
             x_values = strains_summed_clipped.index/1000
             y_values = strains_summed_clipped['Strain']
@@ -130,7 +147,10 @@ for k,model in enumerate(tqdm(models[0:])):
                 y_smoothed = y_values
         
             # Normalized smoothed strain using maximum strain value
-            y_normalized = y_smoothed / max_strain               #np.max(y_smoothed)
+            if max_strain != 0:
+                y_normalized = y_smoothed / max_strain
+            else:
+                y_normalized = y_smoothed
             
 
             axs[i][1].plot(x_values,y_values)
@@ -138,4 +158,4 @@ for k,model in enumerate(tqdm(models[0:])):
          
     plt.tight_layout()
         
-    fig.savefig(output_dir + str(k+1)+'_predef_strain_sides_time.pdf')
+    fig.savefig(output_dir + str(k+1)+'_noninitial_strain_sides_time.pdf')
