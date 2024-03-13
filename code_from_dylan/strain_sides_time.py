@@ -43,7 +43,7 @@ models = ['063022_rip_c','071822_rip_b','070422_rip_e','072022_rip_a',
 
 names = ['Model ' + str(x) for x in range(1,17)]
 
-output_dir = r'predef_results/100km/strain_sides_time/noninitial_plots'
+output_dir = r'predef_results/100km/strain_sides_time/noninitial_plots/'
 
 # Indicate time of final rift of reach model (post-cooling)
 
@@ -81,10 +81,10 @@ for k,model in enumerate(tqdm(models[0:])):
 
     # Setting up dataframe for noninitial strain plotting
     initial_df = pd.DataFrame()
-    initial_df['left'] = np.zeros(401)
-    initial_df['right'] = np.zeros(401)
-    initial_df['suture'] = np.zeros(401)
-    initial_df['asth'] = np.zeros(401)
+    initial_df['left'] = np.zeros(701)
+    initial_df['right'] = np.zeros(701)
+    initial_df['suture'] = np.zeros(701)
+    initial_df['asth'] = np.zeros(701)
 
     # Making plots for each timestep
     for i in range(0, last_mesh_num + 1):
@@ -124,20 +124,24 @@ for k,model in enumerate(tqdm(models[0:])):
             # Quitting the loop if asthenosphere dataframe is empty
             if df.empty:
                 break
-            # Sum strains along same x and clip
-            strains_summed = df.groupby(['X']).sum()
+
+            # Sum strains along same x and reformat datatable
+            strains_summed = df.groupby(['X']).sum() # note this accidentally sums the side&layer column too
             strains_summed_clipped = strains_summed[3e5:7e5+1]
-            
+            strains_summed_clipped.index /= 1000
+            strains_summed_clipped = strains_summed_clipped.reindex(np.arange(300, 701), fill_value=0.0)
+
             # Subtract out the initial strain (if needed)
+            # NOTE: may not work if initial timesteps lacks all 4 fields and later timesteps have them
             if subtract_initial:
                 # Getting initial strains (if needed)
                 if i == 0:
-                    # TODO: Get these dimensions to line up wayyyy nicer lol
-                    initial_df[side][int(strains_summed_clipped.index/1000) - 300] += strains_summed_clipped
-                strains_summed_clipped -= initial_df[side]
+                    initial_df[side] += strains_summed_clipped['Strain']
+
+                strains_summed_clipped['Strain'] -= initial_df[side]
 
             # Isolate x values (km) and strains
-            x_values = strains_summed_clipped.index/1000
+            x_values = strains_summed_clipped.index
             y_values = strains_summed_clipped['Strain']
         
             # Use filter to smooth strains
