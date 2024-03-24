@@ -77,7 +77,8 @@ for k,model in enumerate(tqdm(models[0:])):
     bounds_mesh = [bound*1e3 for bound in bounds] +[0,0]
 
     # Setting up figure
-    fig, axs = plt.subplots(last_mesh_num + 1, 3, dpi=300, figsize=(11, 17))
+    # Currently does NOT create normalized plot
+    fig, axs = plt.subplots(last_mesh_num + 1, 2, dpi=300, figsize=(11, 17))
 
     # Setting up dataframe for noninitial strain plotting
     initial_df = pd.DataFrame()
@@ -156,10 +157,13 @@ for k,model in enumerate(tqdm(models[0:])):
             else:
                 y_normalized = y_smoothed
             
+            y_label = side + ': ' + str(int(np.sum(y_values)))
 
-            axs[i][1].plot(x_values,y_values)
-            axs[i][2].plot(x_values,y_normalized)
+            axs[i][1].plot(x_values,y_values, label=y_label)
+            #axs[i][2].plot(x_values,y_normalized)
          
+        axs[i][1].legend()
+
     plt.tight_layout()
         
     fig.savefig(output_dir + str(k+1)+'_noninitial_strain_sides_time.pdf')
