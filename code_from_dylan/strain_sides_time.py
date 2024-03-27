@@ -61,6 +61,10 @@ opacity_strain = [0, 0.7, 0.7, 0.7, 0.7]
 lim_strain = [0, 5]
 cm_strain = 'inferno'
 subtract_initial = True
+output_filename = 'side_data.txt'
+
+# Setting up file to write output to
+output_file = open(output_dir + output_filename, 'w')
 
 
 # Create dataframe for final values
@@ -86,6 +90,9 @@ for k,model in enumerate(tqdm(models[0:])):
     initial_df['right'] = np.zeros(701)
     initial_df['suture'] = np.zeros(701)
     initial_df['asth'] = np.zeros(701)
+        
+    # Setting up output file
+    output_file.write('Model ' + str(k + 1) + '\n')
 
     # Making plots for each timestep
     for i in range(0, last_mesh_num + 1):
@@ -124,6 +131,7 @@ for k,model in enumerate(tqdm(models[0:])):
         for side, df in zip(['left', 'right', 'suture', 'asth'], [left_df, right_df, suture_df, asth_df]):  
             # Quitting the loop if asthenosphere dataframe is empty
             if df.empty:
+                output_file.write('0 ')
                 break
 
             # Sum strains along same x and reformat datatable
@@ -157,13 +165,17 @@ for k,model in enumerate(tqdm(models[0:])):
             else:
                 y_normalized = y_smoothed
             
-            y_label = side + ': ' + str(int(np.sum(y_values)))
+            side_sum = str(int(np.sum(y_values)))
+            output_file.write(side_sum  + ' ')
 
+            y_label = side + ': ' + side_sum
             axs[i][1].plot(x_values,y_values, label=y_label)
             #axs[i][2].plot(x_values,y_normalized)
          
         axs[i][1].legend()
+        output_file.write('\n')
 
     plt.tight_layout()
         
     fig.savefig(output_dir + str(k+1)+'_noninitial_strain_sides_time.pdf')
+output_file.close()
