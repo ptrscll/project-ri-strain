@@ -66,7 +66,7 @@ diff_filename = 'diff_data.txt'
 
 # Setting up files to write output to
 output_file = open(output_dir + output_filename, 'w')
-diff_file = open(output_dir + norm_filename, 'w')
+diff_file = open(output_dir + diff_filename, 'w')
 
 
 # Create dataframe for final values
@@ -128,11 +128,14 @@ for k,model in enumerate(tqdm(models[0:])):
                 opacity=opacity_strain, clim=lim_strain)
         axs[i][0].set_title('Model '+str(k+1))
 
+        # Setting up output files
+        diff_file.write('Timestep ' + str(i) + '\n')
+
         # Plotting strain by x-value for each side
         max_strain = np.max(df.groupby(['X'])['Strain'].sum())
 
         for side, df in zip(['left', 'right', 'suture', 'asth'], [left_df, right_df, suture_df, asth_df]):  
-            norm_file.write(side + ' ')
+            diff_file.write(side + ' ')
             
             # Quitting the loop if asthenosphere dataframe is empty
             if df.empty:
@@ -176,36 +179,40 @@ for k,model in enumerate(tqdm(models[0:])):
             output_file.write(side_sum  + ' ')
 
             # Calculating the total strain in the main part of the side
-            positive_indices = np.asarray(y_normalized > 0).nonzero()
-
+            positive_indices = np.asarray(y_normalized > 0).nonzero()[0]
+                
             # Getting middle 95% of strain
             total_norm_strain = np.sum(y_normalized[positive_indices])
-            cutoff = 0.05 * 0.5 * total_norm_strain
-            
-            curr_sum = 0
-            i = -1
-            while curr_sum < cutoff * total_norm_strain:
-                i += 1
-                curr_sum += y_normalized[positive_indices[i]]
-            left_index = positive_indices[i]
+            if total_norm_strain > 0:
+                cutoff = 0.05 * 0.5 * total_norm_strain
+                
+                curr_sum = 0
+                j = -1
+                while curr_sum < cutoff:
+                    j += 1
+                    curr_sum += y_normalized[positive_indices[j]]
+                left_index = positive_indices[j]
 
-            curr_sum = 0
-            i = len(positive_indices)
-            while curr_sum < cutoff * total_norm_strain:
-                i -= 1
-                curr_sum += y_normalized[positive_indices[i]]
-            right_index = positive_indices[i]
+                curr_sum = 0
+                j = len(positive_indices)
+                while curr_sum < cutoff:
+                    j -= 1
+                    curr_sum += y_normalized[positive_indices[j]]
+                right_index = positive_indices[j]
 
-            # Sanity check
-            assert(len(y_values) == len(y_normalized))
+                # Sanity check
+                assert(len(y_values) == len(y_normalized))
             
-            # Calculating values for diffusivity file
-            x1 = x_values[left_index]
-            x2 = x_values[right_index]
-            central_strain = np.sum(y_values[left_index:right_index + 1]
+                # Calculating values for diffusivity file
+                x1 = x_values[left_index]
+                x2 = x_values[right_index]
+                central_strain = np.sum(y_values[left_index:right_index + 1])
 
-            norm_file.write(str(x1) + ' ' + str(x2) + ' ' + str(int(central_strain)) + '\n')
-            
+                diff_file.write(str(x1) + ' ' + str(x2) + ' ' + str(int(central_strain)) + '\n')
+                #for debugging:
+                print(side, x1, x2, central_strain)
+            else:
+                diff_file.write('SKIP\n')
             # Plotting
             y_label = side + ': ' + side_sum
             axs[i][1].plot(x_values,y_values, label=y_label)
