@@ -84,7 +84,7 @@ for k,model in enumerate(tqdm(models[0:])):
 
     # Setting up figure
     # Currently does NOT create normalized plot
-    fig, axs = plt.subplots(last_mesh_num + 1, 2, dpi=300, figsize=(11, 17))
+    fig, axs = plt.subplots(last_mesh_num + 1, 3, dpi=300, figsize=(18, 20))
 
     # Setting up dataframe for noninitial strain plotting
     initial_df = pd.DataFrame()
@@ -184,7 +184,7 @@ for k,model in enumerate(tqdm(models[0:])):
             # Getting middle 95% of strain
             total_norm_strain = np.sum(y_normalized[positive_indices])
             if total_norm_strain > 0:
-                cutoff = 0.05 * 0.5 * total_norm_strain
+                cutoff = 0.10 * 0.5 * total_norm_strain
                 
                 curr_sum = 0
                 j = -1
@@ -212,11 +212,14 @@ for k,model in enumerate(tqdm(models[0:])):
                 #for debugging:
                 print(side, x1, x2, central_strain)
             else:
+                x1 = x_values[0]
+                x2 = x_values[-1]
                 diff_file.write('SKIP\n')
             # Plotting
             y_label = side + ': ' + side_sum
             axs[i][1].plot(x_values,y_values, label=y_label)
-            #axs[i][2].plot(x_values,y_normalized)
+            axs[i][2].plot(x_values,y_normalized)
+            axs[i][3].plot(x_values,y_normalized[x1:x2 + 1])
          
         axs[i][1].legend()
         output_file.write('\n')
