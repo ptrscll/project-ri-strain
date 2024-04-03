@@ -63,10 +63,12 @@ cm_strain = 'inferno'
 subtract_initial = True
 output_filename = 'side_data.txt'
 diff_filename = 'diff_data.txt'
+alt_diff_filename = 'diff_data_max_10_cutoff.txt'
 
 # Setting up files to write output to
 output_file = open(output_dir + output_filename, 'w')
 diff_file = open(output_dir + diff_filename, 'w')
+alt_diff_file = open(output_dir + alt_diff_filename, 'w')
 
 
 # Create dataframe for final values
@@ -84,7 +86,7 @@ for k,model in enumerate(tqdm(models[0:])):
 
     # Setting up figure
     # Currently does NOT create normalized plot
-    fig, axs = plt.subplots(last_mesh_num + 1, 3, dpi=300, figsize=(18, 20))
+    fig, axs = plt.subplots(last_mesh_num + 1, 5, dpi=300, figsize=(25, 25))
 
     # Setting up dataframe for noninitial strain plotting
     initial_df = pd.DataFrame()
@@ -96,6 +98,7 @@ for k,model in enumerate(tqdm(models[0:])):
     # Setting up output files
     output_file.write('Model ' + str(k + 1) + '\n')
     diff_file.write('Model ' + str(k + 1) + '\n')
+    alt_diff_file.write('Model ' + str(k + 1) + '\n')
 
     # Making plots for each timestep
     for i in range(0, last_mesh_num + 1):
@@ -130,17 +133,20 @@ for k,model in enumerate(tqdm(models[0:])):
 
         # Setting up output files
         diff_file.write('Timestep ' + str(i) + '\n')
+        alt_diff_file.write('Timestep ' + str(i) + '\n')
 
         # Plotting strain by x-value for each side
         max_strain = np.max(df.groupby(['X'])['Strain'].sum())
 
         for side, df in zip(['left', 'right', 'suture', 'asth'], [left_df, right_df, suture_df, asth_df]):  
             diff_file.write(side + ' ')
+            alt_diff_file.write(side + ' ')
             
             # Quitting the loop if asthenosphere dataframe is empty
             if df.empty:
                 output_file.write('0 ')
                 diff_file.write('0 0 0\n')
+                alt_diff_file.write('0 0\n')
                 break
 
             # Sum strains along same x and reformat datatable
@@ -180,9 +186,9 @@ for k,model in enumerate(tqdm(models[0:])):
 
             # Calculating the total strain in the main part of the side
             positive_indices = np.asarray(y_normalized > 0).nonzero()[0]
-                
-            # Getting middle 95% of strain
             total_norm_strain = np.sum(y_normalized[positive_indices])
+                
+            # Getting middle 90% of strain
             if total_norm_strain > 0:
                 cutoff = 0.10 * 0.5 * total_norm_strain
                 
@@ -199,9 +205,6 @@ for k,model in enumerate(tqdm(models[0:])):
                     j -= 1
                     curr_sum += y_normalized[positive_indices[j]]
                 right_index = positive_indices[j]
-
-                # Sanity check
-                assert(len(y_values) == len(y_normalized))
             
                 # Calculating values for diffusivity file
                 x1 = x_values[left_index]
@@ -209,17 +212,30 @@ for k,model in enumerate(tqdm(models[0:])):
                 central_strain = np.sum(y_values[left_index:right_index + 1])
 
                 diff_file.write(str(x1) + ' ' + str(x2) + ' ' + str(int(central_strain)) + '\n')
-                #for debugging:
-                print(side, x1, x2, central_strain)
+                #print(side, x1, x2, central_strain)
             else:
-                x1 = x_values[0]
-                x2 = x_values[-1]
+                left_index = 0
+                right_index = len(x_values) - 1
                 diff_file.write('SKIP\n')
+
             # Plotting
             y_label = side + ': ' + side_sum
             axs[i][1].plot(x_values,y_values, label=y_label)
             axs[i][2].plot(x_values,y_normalized)
-            axs[i][3].plot(x_values,y_normalized[x1:x2 + 1])
+            axs[i][3].plot(x_values[left_index:right_index + 1],y_normalized[left_index:right_index + 1])
+
+            # Getting main part of strain based on max of strain
+            max_side_strain = np.max(y_normalized)
+            min_strain = 0.10 * max_side_strain
+            valid_indices = (y_normalized > min_strain).astype(bool)
+            alt_central_strain = y_values[valid_indices].sum()
+            cumulative_width = len(y_normalized[valid_indices])
+            
+            alt_diff_file.write(str(cumulative_width) + ' ' + str(int(alt_central_strain)) + '\n')
+
+            axs[i][4].plot(x_values[valid_indices], y_normalized[valid_indices])
+
+
          
         axs[i][1].legend()
         output_file.write('\n')
@@ -229,3 +245,4 @@ for k,model in enumerate(tqdm(models[0:])):
     fig.savefig(output_dir + str(k+1)+'_noninitial_strain_sides_time.pdf')
 output_file.close()
 diff_file.close()
+alt_diff_file.close()
