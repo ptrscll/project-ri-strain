@@ -63,6 +63,8 @@ axs[2].set_ylabel('left : suture')
 axs[3].set_ylabel('right : suture')
 axs[4].set_ylabel('left + right : suture')
 
+axs[0].set_yscale('log')
+axs[1].set_yscale('log')
 axs[2].set_yscale('log')
 axs[3].set_yscale('log')
 axs[4].set_yscale('log')

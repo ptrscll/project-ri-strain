@@ -55,6 +55,7 @@ data_file.close()
 for i in range(0, 8):
     axs[i].set_xlabel('Timestep')
     axs[i].legend()
+    axs[i].set_yscale('log')
 
 axs[0].set_ylabel('left : right')
 axs[1].set_ylabel('right : left')
