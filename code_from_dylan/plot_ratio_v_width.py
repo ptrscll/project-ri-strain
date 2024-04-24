@@ -8,7 +8,7 @@ from matplotlib.ticker import FormatStrFormatter
 
 
 side_path = r'predef_results/100km/strain_sides_time/noninitial_plots/side_data.txt'
-width_path = r'predef_results/100km/strain_sides_time/noninitial_plots/diff_data_max_10_cutoff.txt'
+width_path = r'predef_results/100km/strain_sides_time/noninitial_plots/width_data.txt'
 
 # Code to add arrows to plots
 # Adapted from https://stackoverflow.com/questions/34017866/arrow-on-a-line-plot
@@ -78,8 +78,9 @@ for line in data_file:
     if entries[0] == 'Model':
         widths.append([])
         
-    elif entries[0] == 'suture':
-        width = float(entries[1])
+    #elif entries[0] == 'suture':
+    else:
+        width = float(entries[0])
         if (width != 0):
             widths[-1].append(width)
         
@@ -95,7 +96,7 @@ for i in range(0, 8):
 
 # Making nicer formatting
 ax.set_xlabel('Right Side Strain : Left Side Strain')
-ax.set_ylabel('Suture Width (km)')
+ax.set_ylabel('Width of Primary Strain Regions (km)')
 plt.tick_params(axis='x', which='minor')
 ax.xaxis.set_minor_formatter(FormatStrFormatter("%.1f"))
 
@@ -103,7 +104,7 @@ ax.legend()
 ax.set_xscale('log')
 plt.tight_layout()
 
-plt.savefig(r'predef_results/100km/strain_sides_time/noninitial_plots/L_R_S_W_plot.png')
+plt.savefig(r'predef_results/100km/strain_sides_time/noninitial_plots/full_width_ratio_plot.png')
 
 
             
