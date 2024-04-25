@@ -12,7 +12,7 @@ width_path = r'predef_results/100km/strain_sides_time/noninitial_plots/width_dat
 
 # Code to add arrows to plots
 # Adapted from https://stackoverflow.com/questions/34017866/arrow-on-a-line-plot
-def add_arrow(line, position=None, direction='right', size=15, color=None, start_ind = None):
+def add_arrow(line, position=None, direction='right', size=15, color=None, start_ind = None, alpha = 1.0):
     """
     add an arrow to a line.
 
@@ -41,8 +41,8 @@ def add_arrow(line, position=None, direction='right', size=15, color=None, start
     line.axes.annotate('',
         xytext=(xdata[start_ind], ydata[start_ind]),
         xy=(xdata[end_ind], ydata[end_ind]),
-        arrowprops=dict(arrowstyle="->", color=color),
-        size=size
+        arrowprops=dict(arrowstyle="->", color=color, alpha=alpha),
+        size=size, alpha=alpha
     )
 
 
@@ -89,19 +89,58 @@ data_file.close()
 # Plotting data
 for i in range(0, 8):
     line = ax.plot(R_L[i], widths[i], label='Model ' + str(i + 1), marker='X', markevery=[-1])[0]
-    add_arrow(line, start_ind=1)
-    add_arrow(line, start_ind=4)
-    add_arrow(line, start_ind=7)
+    if i + 1 not in [1, 3, 5, 8]:
+        alpha = 0.4
+        line.set_color('gray')
+    else:
+        alpha = 1.0
+        if i == 7:
+            line.set_color('red')
+        plt.scatter(R_L[i][:-1], widths[i][:-1], 5, color=line.get_color())
+    line.set_alpha(alpha)
+    if i + 1 not in [1, 3, 5, 8]:
+        add_arrow(line, start_ind=1, alpha=alpha)
+        add_arrow(line, start_ind=4, alpha=alpha)
+        add_arrow(line, start_ind=7, alpha=alpha)
+    elif i + 1 == 1:
+        add_arrow(line, start_ind=0, alpha=alpha)
+        add_arrow(line, start_ind=3, alpha=alpha)
+        add_arrow(line, start_ind=6, alpha=alpha)
+    elif i + 1 == 3:
+        add_arrow(line, start_ind=1, alpha=alpha)
+        add_arrow(line, start_ind=2, alpha=alpha)
+        add_arrow(line, start_ind=5, alpha=alpha)
+    elif i + 1 == 5:
+        add_arrow(line, start_ind=1, alpha=alpha)
+        add_arrow(line, start_ind=6, alpha=alpha)
+    elif i + 1 == 8:
+        add_arrow(line, start_ind=0, alpha=alpha)
+        add_arrow(line, start_ind=3, alpha=alpha)
+        add_arrow(line, start_ind=5, alpha=alpha)
+
 
 
 # Making nicer formatting
+ax.set_xscale('log')
 ax.set_xlabel('Right Side Strain : Left Side Strain')
-ax.set_ylabel('Width of Primary Strain Regions (km)')
-plt.tick_params(axis='x', which='minor')
-ax.xaxis.set_minor_formatter(FormatStrFormatter("%.1f"))
+ax.set_ylabel('Width of High Strain Zone (km)')
+ax.set_xticks([0.25, 0.5, 1.0, 2.0, 4.0])
+ax.set_xticklabels([r'$\frac{1}{4}$', r'$\frac{1}{2}$', '1', '2', '4'])
+ax.set_xticks([2**(-1.5), 2**(-0.5), 2**(0.5), 2**(1.5)], minor=True, labels=[])
+
+# Centering x-axis at x=1
+x_min, x_max = ax.get_xlim()
+new_max = max(1.0 / x_min, x_max)
+ax.set_xlim(1.0 / new_max, new_max)
+
+# Adjusting y-axis
+ax.set_ylim(0, ax.get_ylim()[1])
+
+# Adding symmetry shading and width boundary line
+ax.axvspan(2**(-0.5), 2**(0.5), facecolor='orange', alpha=0.25)
+ax.axhline(175, color='black', linestyle='dashed')
 
 ax.legend()
-ax.set_xscale('log')
 plt.tight_layout()
 
 plt.savefig(r'predef_results/100km/strain_sides_time/noninitial_plots/full_width_ratio_plot.png')
