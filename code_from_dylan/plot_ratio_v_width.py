@@ -51,7 +51,15 @@ data_file = open(side_path, 'r')
 
 R_L = []
 
-fig, ax = plt.subplots(dpi=300)
+fig, ax = plt.subplots(dpi=300, figsize=(10, 9))
+
+for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
+             ax.get_xticklabels() + ax.get_yticklabels()):
+    item.set_fontsize(16)
+plt.rcParams.update({'font.size': 16})
+ax.xaxis.label.set_fontsize(20)
+ax.yaxis.label.set_fontsize(20)
+#ax.get_xticklabels().set_fontsize(16)
 
 for line in data_file:
     entries = line.split()
@@ -96,7 +104,7 @@ for i in range(0, 8):
         alpha = 1.0
         if i == 7:
             line.set_color('red')
-        plt.scatter(R_L[i][:-1], widths[i][:-1], 5, color=line.get_color())
+        plt.scatter(R_L[i][:-1], widths[i][:-1], 20, color=line.get_color())
     line.set_alpha(alpha)
     if i + 1 not in [1, 3, 5, 8]:
         add_arrow(line, start_ind=1, alpha=alpha)
@@ -141,6 +149,18 @@ ax.axvspan(2**(-0.5), 2**(0.5), facecolor='orange', alpha=0.25)
 ax.axhline(175, color='black', linestyle='dashed')
 
 ax.legend()
+
+# Circling timesteps
+for i in [0, 2, 4, 7]:
+    tsteps = []
+    if i == 0 or i == 4:
+        tsteps = np.array([5, 10])
+    else:
+        tsteps = np.array([3, 10])
+    tsteps -= 1
+    for j in tsteps:
+        ax.plot(R_L[i][j], widths[i][j], 'o', ms=10, mec='black', mfc='none', mew=1)
+
 plt.tight_layout()
 
 plt.savefig(r'predef_results/100km/strain_sides_time/noninitial_plots/full_width_ratio_plot.png')

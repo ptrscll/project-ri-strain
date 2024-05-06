@@ -82,6 +82,14 @@ if k == 0:
     # Currently does NOT create normalized plot
     fig, axs = plt.subplots(3, 2, dpi=300, figsize=(10, 10))
 
+    for i in range(0, 3):
+        for ax in axs[i]:
+            for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
+                        ax.get_xticklabels() + ax.get_yticklabels()):
+                item.set_fontsize(16)
+            plt.rcParams.update({'font.size': 16})
+            #ax.get_xticklabels().set_fontsize(16)
+
     # Setting up dataframe for noninitial strain plotting
     initial_df = pd.DataFrame()
     initial_df['left'] = np.zeros(701)
@@ -215,7 +223,7 @@ if k == 0:
                     color = 'purple'
                 #y_label = side + ': ' + side_sum
 
-                if (k == 0 or k == 4) and side != 'asth':
+                if (k == 0 or k == 4) and side != 'asth' and j != 0:
                     axs[j][1].plot(x_values,y_values, label=y_label, color=color)
                 
                 '''
@@ -234,7 +242,7 @@ if k == 0:
                 '''
 
             # Formatting Time!
-            if j == 0:
+            if j == 2:
                 axs[j][1].legend()
 
             axs[j][0].set_ylabel('y (km)')
@@ -253,9 +261,13 @@ if k == 0:
         y_min = min(y_min, axs[j][1].get_ylim()[0])
         y_max = max(y_max, axs[j][1].get_ylim()[1])
 
-    for j in range(0, 3):
+    for j in range(1, 3):
         axs[j][1].set_ylim(y_min, y_max)
         axs[j][1].axhline(0, color='black')
+
+    axs[0, 1].axis("off")
+    #handles, labels = ax.get_legend_handles_labels()
+    #fig.legend(handles, labels, loc='upper right')
 
     plt.tight_layout()
         

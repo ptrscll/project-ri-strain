@@ -66,9 +66,9 @@ subtract_initial = True
 # Create dataframe for final values
 final = pd.DataFrame([],columns=['Localization','Symmetry','C-ness'])
 
-k = 2
+k = 7
 model = models[k]
-if k == 2:
+if k == 7:
 
     # Setting up variables for plotting loop
     side_dir = r'predef_suture_figs/'
@@ -81,6 +81,15 @@ if k == 2:
     # Setting up figure
     # Currently does NOT create normalized plot
     fig, axs = plt.subplots(3, 3, dpi=300, figsize=(15, 10))
+
+    for i in range(0, 3):
+        for ax in axs[i]:
+            for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
+                        ax.get_xticklabels() + ax.get_yticklabels()):
+                item.set_fontsize(16)
+            plt.rcParams.update({'font.size': 16})
+            #ax.get_xticklabels().set_fontsize(16)
+
 
     # Setting up dataframe for noninitial strain plotting
     initial_df = pd.DataFrame()
@@ -190,9 +199,10 @@ if k == 2:
             
             ''' 
             # Plotting
-            axs[j][1].plot(x_values,y_values)
-            axs[j][2].plot(x_values,y_normalized)
-            #axs[i][3].plot(x_values[left_index:right_index + 1],y_normalized[left_index:right_index + 1])
+            if j != 0:
+                axs[j][1].plot(x_values,y_values)
+                axs[j][2].plot(x_values,y_normalized)
+                #axs[i][3].plot(x_values[left_index:right_index + 1],y_normalized[left_index:right_index + 1])
 
             # Formatting
             axs[j][0].set_ylabel('y (km)')
@@ -248,7 +258,7 @@ if k == 2:
 
         norm_y_min = min(norm_y_min, axs[j][2].get_ylim()[0])
 
-    for j in range(0, 3):
+    for j in range(1, 3):
         axs[j][1].set_ylim(y_min, y_max)
         axs[j][1].axhline(0, color='black')
 
@@ -256,6 +266,8 @@ if k == 2:
         axs[j][2].axhline(0, color='black')
         axs[j][2].axhline(0.1, color='gray', linestyle='dashed')
 
+    axs[0, 1].axis("off")
+    axs[0, 2].axis("off")
     plt.tight_layout()
         
     fig.savefig(output_dir + str(k+1)+'_poster.png')
